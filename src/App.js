@@ -11,6 +11,9 @@ const api = axios.create({
   },
 });
 
+const imgExtensions = ["jpg", "JPG", "peg", "png", "gif"];
+const videoExtensions = ["mp4", "MP4", "EBM", "ebm"];
+
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -27,6 +30,10 @@ const DogContainerArea = styled.div`
   border-radius: 10px;
   justify-content: center;
   align-items: center;
+
+  :focus {
+    outline: none;
+  }
 `;
 
 const Title = styled.span`
@@ -47,10 +54,26 @@ const StyledButton = styled.button`
   margin: 0px 10px;
 `;
 
-const DogContainer = styled.img`
+const DogContainer = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 10px;
+
+  :focus {
+    outline: none;
+  }
+`;
+
+const StyledImg = styled.img`
+  :focus {
+    outline: none;
+  }
+`;
+
+const StyledVideo = styled.video`
+  :focus {
+    outline: none;
+  }
 `;
 
 function App() {
@@ -58,6 +81,7 @@ function App() {
   const [previousDog, setPreviousDog] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isPrevious, setIsPrevious] = useState(false);
+  const [extension, setExtension] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -82,6 +106,8 @@ function App() {
       const { data } = await api.get("/woof.json");
       setPreviousDog(dog);
       setDog(data.url);
+
+      setExtension(data.url.slice(data.url.length - 3));
     } catch (e) {
       console.log("Error: ", e);
     } finally {
@@ -94,6 +120,7 @@ function App() {
     setIsPrevious(true);
     try {
       setDog(previousDog);
+      setExtension(previousDog.slice(previousDog.length - 3));
     } catch (e) {
       console.log("Error: ", e);
     } finally {
@@ -122,7 +149,23 @@ function App() {
             width={100}
           />
         ) : (
-          <DogContainer src={dog} />
+          <DogContainer>
+            {imgExtensions.includes(extension) ? (
+              <StyledImg style={{ width: "100%", height: "100%" }} src={dog} />
+            ) : (
+              <StyledVideo
+                autoplay={true}
+                controls={true}
+                width="100%"
+                height="100%"
+              >
+                <source
+                  src={dog}
+                  type={`video/${extension === "ebm" ? "webm" : extension}`}
+                />
+              </StyledVideo>
+            )}
+          </DogContainer>
         )}
       </DogContainerArea>
     </Container>
