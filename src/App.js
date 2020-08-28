@@ -1,25 +1,131 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+import axios from "axios";
+import ReactLoading from "react-loading";
+
+const BASE_URL = "https://random.dog";
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json;charset=utf-8",
+  },
+});
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`;
+
+const DogContainerArea = styled.div`
+  display: flex;
+  height: 600px;
+  width: 800px;
+  border: 1px solid white;
+  border-radius: 10px;
+  justify-content: center;
+  align-items: center;
+`;
+
+const Title = styled.span`
+  color: white;
+  font-size: 3rem;
+  position: absolute;
+  top: 0;
+`;
+
+const DogButtons = styled.div`
+  display: flex;
+  margin: 10px;
+`;
+
+const StyledButton = styled.button`
+  width: 6rem;
+  height: 2.2rem;
+  margin: 0px 10px;
+`;
+
+const DogContainer = styled.img`
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+`;
 
 function App() {
+  const [dog, setDog] = useState(null);
+  const [previousDog, setPreviousDog] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [isPrevious, setIsPrevious] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    async function teste() {
+      const { data } = await api.get("/woof.json");
+      setDog(data.url);
+    }
+    try {
+      teste();
+    } catch (e) {
+      console.log("Error: ", e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  async function HandleRandomizeDog() {
+    setLoading(true);
+    setIsPrevious(false);
+
+    try {
+      const { data } = await api.get("/woof.json");
+      setPreviousDog(dog);
+      setDog(data.url);
+    } catch (e) {
+      console.log("Error: ", e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function HandlePreviousDog() {
+    setLoading(true);
+    setIsPrevious(true);
+    try {
+      setDog(previousDog);
+    } catch (e) {
+      console.log("Error: ", e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <Container>
+      <Title>Random Dogs</Title>
+      <DogButtons>
+        <StyledButton
+          disabled={!previousDog || isPrevious}
+          onClick={HandlePreviousDog}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
+          Previous
+        </StyledButton>
+        <StyledButton onClick={HandleRandomizeDog}>Randomize</StyledButton>
+      </DogButtons>
+      <DogContainerArea>
+        {loading ? (
+          <ReactLoading
+            type={"spinningBubbles"}
+            color={"white"}
+            height={100}
+            width={100}
+          />
+        ) : (
+          <DogContainer src={dog} />
+        )}
+      </DogContainerArea>
+    </Container>
   );
 }
 
