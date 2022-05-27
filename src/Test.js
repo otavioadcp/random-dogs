@@ -6,3 +6,5 @@ const addValues = (a, b) => {
   console.log("Log return value:", a + b);
   return a + b;
 };
+
+//test add comment
